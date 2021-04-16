@@ -1,0 +1,40 @@
+{
+  "canisters": {
+    "ic_kanban": {
+      "main": "src/ic_kanban/main.mo",
+      "type": "motoko"
+    },
+    "ic_kanban_assets": {
+      "dependencies": [
+        "ic_kanban"
+      ],
+      "frontend": {
+        "entrypoint": "src/ic_kanban_assets/public/index.js"
+      },
+      "source": [
+        "src/ic_kanban_assets/assets",
+        "dist/ic_kanban_assets/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": ""
+    }
+  },
+  "dfx": "0.6.14",
+  "networks": {
+    "ic": {
+      "providers": [
+        "https://gw.dfinity.network"
+      ],
+      "type": "persistent"
+    },
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  },
+  "version": 1
+}
