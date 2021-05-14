@@ -1,95 +1,54 @@
 import Array "mo:base/Array";
+import Hash "mo:base/Hash";
+import Nat "mo:base/Nat";
+
+import DB "mo:crud/Database";
+
+import Types "./Types";
 
 actor {
-    // A board contains a collection of columns
-    // Column ordering is maintained implicitly by array index
-    type Board = {
-        columns: [Column];
+
+    type Id = Types.Id;
+    type Card = Types.Card;
+    type Column = Types.Column;
+
+    let dbCards = DB.Database<Id, Card>(Types.getNextId, Nat.equal, #hash(Hash.hash));
+    let dbColumns = DB.Database<Id, Column>(Types.getNextId, Nat.equal, #hash(Hash.hash));
+
+    public func addColumn(title: Text) : async Id {
+        dbColumns.create({ title; })
     };
 
-    // A column contains a collection of cards and a variant describing the colum
-    type Column = {
-        column_type: ColumnType;
-        cards: [Card];
+    public func readColumn(columnId: Id) : async DB.Res<Column> {
+        dbColumns.read(columnId)
     };
 
-    // Column Type: To Do, In Progress, Done
-    type ColumnType = Text;
-
-    // A card contains a title and description of the work to be done
-    type Card = {
-        title: Text;
-        description: Text;
+    public func updateColumn(columnId: Id, column: Column) : async DB.Res<()> {
+        dbColumns.update(columnId, column)
     };
 
-    // This should persist across updates in production
-    stable var board : Board = { columns = []};
-
-    public query func getBoard() : async Board {
-        board
+    func deleteColumn(id: Id) : DB.Res<()> {
+        dbCards.delete(id)
     };
 
-    public func createBoard() {
-        let todo = "Todo";
-        let inprogress = "In Progress";
-        let done = "Done";
-        board := {
-            columns = [
-                createColumn(todo),
-                createColumn(inprogress),
-                createColumn(done)
-            ]
-        };
-    };
-
-    public func addColumnToBoard(name: Text) {
-        let oldColumns = board.columns;
-        let newColumns = Array.append<Column>(oldColumns, [createColumn(name)]);
-        board := { columns = newColumns };
-    };
-
-    public func addCardToColumn(columnName: ColumnType, cardName: Text, cardDescription: Text) {
-        
-    };
-
-    func createColumn(name: Text) : Column {
-        { column_type = name; cards = []; }
-    };
-
-    func deleteCard(column: Column, titleToDelete: Text) : Column {
-        let oldCards = column.cards;
-
-        let filterFn = func (c: Card) : Bool { c.title != titleToDelete };
-        let newCards = Array.filter<Card>(
-            oldCards,
-            filterFn
-        );
-
-        {
-            column_type = column.column_type;
-            cards = newCards;
+    public func addCard(title: Text, description: Text, columnId: Id) : async DB.Res<Id> {
+        // Ensure column already exists
+        switch (dbColumns.read(columnId)) {
+            case (#ok(_)) #ok(dbCards.create({ title; description; columnId }));
+            case (#err(e)) #err(e);
         }
     };
 
-    func deleteColumn(columnTypeToDelete: ColumnType) : Board {
-        let oldColumns = board.columns;
-
-        let filterFn = func (c: Column) : Bool { c.column_type != columnTypeToDelete };
-        let newColumns = Array.filter<Column>(
-            oldColumns,
-            filterFn
-        );
-
-        {
-            columns = newColumns;
-        }
+    public func readCard(cardId: Id) : async DB.Res<Card> {
+        dbCards.read(cardId)
     };
 
-    // CRUD for a card
-    // Create & Delete a board which contains Todo, In Progress, Done
-        // Create for Columns
-    // public func 
+    public func updateCard(cardId: Id, card: Card) : async DB.Res<()> {
+        dbCards.update(cardId, card)
+    };
 
-
+    func deleteCard(id: Id) : DB.Res<()> {
+        dbCards.delete(id)
+    };
 
 };

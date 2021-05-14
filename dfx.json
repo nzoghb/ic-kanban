@@ -20,10 +20,9 @@
   },
   "defaults": {
     "build": {
-      "packtool": ""
+      "packtool": "vessel sources"
     }
   },
-  "dfx": "0.6.26",
   "networks": {
     "ic": {
       "providers": [
